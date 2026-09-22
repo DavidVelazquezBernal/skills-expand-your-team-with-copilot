@@ -603,9 +603,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const safeActivityName = ShareUtils.escapeHtml(name);
     const primaryShareButtonLabel = navigator.share ? "Share" : "Copy Link";
     const primaryShareButtonType = navigator.share ? "share" : "copy";
-    const primaryShareButtonAriaLabel = navigator.share
-      ? `Share ${safeActivityName}`
-      : `Copy link for ${safeActivityName}`;
     const shareLabelId = `share-actions-label-${encodeURIComponent(name).replace(
       /%/g,
       "-"
@@ -643,13 +640,13 @@ document.addEventListener("DOMContentLoaded", () => {
       <div class="share-actions" role="group" aria-labelledby="${shareLabelId}">
         <span class="share-actions-label" id="${shareLabelId}">Share with friends:</span>
         <div class="share-buttons">
-          <button class="share-button" data-share-type="${primaryShareButtonType}" type="button" aria-label="${primaryShareButtonAriaLabel}">
+          <button class="share-button" data-share-type="${primaryShareButtonType}" type="button">
             ${primaryShareButtonLabel}
           </button>
-          <button class="share-button" data-share-type="email" type="button" aria-label="Email ${safeActivityName}">
+          <button class="share-button" data-share-type="email" type="button">
             Email
           </button>
-          <button class="share-button" data-share-type="copy" type="button" aria-label="Copy link for ${safeActivityName}">
+          <button class="share-button" data-share-type="copy" type="button">
             Copy Link
           </button>
         </div>
@@ -706,6 +703,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const shareButtons = activityCard.querySelectorAll(".share-button");
     shareButtons.forEach((button) => {
       button.dataset.activity = name;
+      const shareTypeLabels = {
+        share: `Share ${name}`,
+        email: `Email ${name}`,
+        copy: `Copy link for ${name}`,
+      };
+      button.setAttribute("aria-label", shareTypeLabels[button.dataset.shareType]);
       button.addEventListener("click", handleActivityShare);
     });
 
