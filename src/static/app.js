@@ -708,7 +708,7 @@ document.addEventListener("DOMContentLoaded", () => {
         email: `Email ${name}`,
         copy: `Copy link for ${name}`,
       };
-      button.setAttribute("aria-label", shareTypeLabels[button.dataset.shareType]);
+      button.ariaLabel = shareTypeLabels[button.dataset.shareType];
       button.addEventListener("click", handleActivityShare);
     });
 
