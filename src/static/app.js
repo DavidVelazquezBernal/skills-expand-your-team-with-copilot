@@ -46,6 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Authentication state
   let currentUser = null;
+  let hasExplicitThemePreference = false;
   const themeStorageKey = "preferredTheme";
 
   // Time range mappings for the dropdown
@@ -100,17 +101,44 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function initializeTheme() {
     const savedTheme = getStoredTheme();
-    const supportsColorScheme =
-      typeof window.matchMedia === "function" &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const preferredTheme =
-      savedTheme || (supportsColorScheme ? "dark" : "light");
+    hasExplicitThemePreference = Boolean(savedTheme);
+    const preferredTheme = savedTheme || getSystemThemePreference();
 
     applyTheme(preferredTheme);
   }
 
+  function getSystemThemePreference() {
+    if (typeof window.matchMedia !== "function") {
+      return "light";
+    }
+
+    return window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
+  }
+
+  function watchSystemThemePreference() {
+    if (typeof window.matchMedia !== "function") {
+      return;
+    }
+
+    const colorSchemeQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const updateThemeFromSystem = (event) => {
+      if (!hasExplicitThemePreference) {
+        applyTheme(event.matches ? "dark" : "light");
+      }
+    };
+
+    if (typeof colorSchemeQuery.addEventListener === "function") {
+      colorSchemeQuery.addEventListener("change", updateThemeFromSystem);
+    } else if (typeof colorSchemeQuery.addListener === "function") {
+      colorSchemeQuery.addListener(updateThemeFromSystem);
+    }
+  }
+
   function toggleTheme() {
     const currentTheme = document.documentElement.dataset.theme || "light";
+    hasExplicitThemePreference = true;
     applyTheme(currentTheme === "dark" ? "light" : "dark", true);
   }
 
@@ -929,6 +957,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Initialize app
   initializeTheme();
+  watchSystemThemePreference();
   checkAuthentication();
   initializeFilters();
   fetchActivities();
