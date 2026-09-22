@@ -41,7 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentDay = "";
   let currentTimeRange = "";
   const sharedActivityName =
-    new URLSearchParams(window.location.search).get("activity") || "";
+    ShareUtils.getSharedActivityNameFromSearch(window.location.search);
 
   // Authentication state
   let currentUser = null;
@@ -78,9 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function buildActivityShareUrl(activityName) {
-    const shareUrl = new URL(window.location.href);
-    shareUrl.searchParams.set("activity", activityName);
-    return shareUrl.toString();
+    return ShareUtils.buildActivityShareUrl(window.location.href, activityName);
   }
 
   async function copyTextToClipboard(text) {
@@ -100,8 +98,16 @@ document.addEventListener("DOMContentLoaded", () => {
     document.body.removeChild(textArea);
   }
 
+  async function copyShareLink(shareUrl) {
+    await copyTextToClipboard(shareUrl);
+    showMessage("Share link copied. You can send it to a friend.", "success");
+  }
+
   function buildActivityShareMessage(activityName, details) {
-    return `Check out ${activityName} at Mergington High School! ${details.description}`;
+    return ShareUtils.buildActivityShareMessage(
+      activityName,
+      details.description
+    );
   }
 
   async function handleActivityShare(event) {
@@ -127,8 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
-        await copyTextToClipboard(shareUrl);
-        showMessage("Share link copied. You can send it to a friend.", "success");
+        await copyShareLink(shareUrl);
         return;
       }
 
@@ -141,8 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       if (shareType === "copy") {
-        await copyTextToClipboard(shareUrl);
-        showMessage("Share link copied. You can send it to a friend.", "success");
+        await copyShareLink(shareUrl);
       }
     } catch (error) {
       if (error.name !== "AbortError") {
@@ -584,6 +588,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Format the schedule using the new helper function
     const formattedSchedule = formatSchedule(details);
     const shareButtonLabel = navigator.share ? "Share" : "Copy Link";
+    const safeActivityName = ShareUtils.escapeHtml(name);
 
     // Create activity tag
     const tagHtml = `
@@ -614,16 +619,16 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="tooltip-text">Regular meetings at this time throughout the semester</span>
       </p>
       ${capacityIndicator}
-      <div class="share-actions" aria-label="Share ${name}">
+      <div class="share-actions" aria-label="Share ${safeActivityName}">
         <span class="share-actions-label">Share with friends:</span>
         <div class="share-buttons">
-          <button class="share-button" data-share-type="share" data-activity="${name}" type="button">
+          <button class="share-button" data-share-type="share" data-activity="${safeActivityName}" type="button">
             ${shareButtonLabel}
           </button>
-          <button class="share-button" data-share-type="email" data-activity="${name}" type="button">
+          <button class="share-button" data-share-type="email" data-activity="${safeActivityName}" type="button">
             Email
           </button>
-          <button class="share-button" data-share-type="copy" data-activity="${name}" type="button">
+          <button class="share-button" data-share-type="copy" data-activity="${safeActivityName}" type="button">
             Copy Link
           </button>
         </div>
