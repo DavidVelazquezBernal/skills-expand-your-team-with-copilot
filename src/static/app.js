@@ -46,9 +46,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Authentication state
   let currentUser = null;
-  let hasExplicitThemePreference = false;
   const themeStorageKey = "preferredTheme";
-  const systemThemeListenerFlag = "__mergingtonThemeListenerRegistered";
+  const sharedThemeState = window.__mergingtonThemeState || {
+    hasExplicitPreference: false,
+    mediaQueryList: null,
+    listenerRegistered: false,
+  };
+  window.__mergingtonThemeState = sharedThemeState;
 
   // Time range mappings for the dropdown
   const timeRanges = {
@@ -102,7 +106,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function initializeTheme() {
     const savedTheme = getStoredTheme();
-    hasExplicitThemePreference = Boolean(savedTheme);
+    sharedThemeState.hasExplicitPreference = Boolean(savedTheme);
     const preferredTheme = savedTheme || getSystemThemePreference();
 
     applyTheme(preferredTheme);
@@ -119,21 +123,28 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function watchSystemThemePreference() {
-    if (
-      typeof window.matchMedia !== "function" ||
-      window[systemThemeListenerFlag]
-    ) {
+    if (typeof window.matchMedia !== "function") {
       return;
     }
 
-    const colorSchemeQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    if (!sharedThemeState.mediaQueryList) {
+      sharedThemeState.mediaQueryList = window.matchMedia(
+        "(prefers-color-scheme: dark)"
+      );
+    }
+
+    if (sharedThemeState.listenerRegistered) {
+      return;
+    }
+
+    const colorSchemeQuery = sharedThemeState.mediaQueryList;
     const updateThemeFromSystem = (event) => {
-      if (!hasExplicitThemePreference) {
+      if (!sharedThemeState.hasExplicitPreference) {
         applyTheme(event.matches ? "dark" : "light");
       }
     };
 
-    window[systemThemeListenerFlag] = true;
+    sharedThemeState.listenerRegistered = true;
 
     if (typeof colorSchemeQuery.addEventListener === "function") {
       colorSchemeQuery.addEventListener("change", updateThemeFromSystem);
@@ -144,7 +155,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function toggleTheme() {
     const currentTheme = document.documentElement.dataset.theme || "light";
-    hasExplicitThemePreference = true;
+    sharedThemeState.hasExplicitPreference = true;
     applyTheme(currentTheme === "dark" ? "light" : "dark", true);
   }
 
