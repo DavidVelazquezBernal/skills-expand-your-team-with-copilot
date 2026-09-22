@@ -70,14 +70,34 @@ document.addEventListener("DOMContentLoaded", () => {
     themeToggleButton.setAttribute("aria-pressed", isDarkMode.toString());
   }
 
+  function getStoredTheme() {
+    try {
+      const storedTheme = localStorage.getItem(themeStorageKey);
+      return storedTheme === "dark" || storedTheme === "light"
+        ? storedTheme
+        : null;
+    } catch (error) {
+      console.warn("Unable to read saved theme preference.", error);
+      return null;
+    }
+  }
+
+  function saveTheme(theme) {
+    try {
+      localStorage.setItem(themeStorageKey, theme);
+    } catch (error) {
+      console.warn("Unable to save theme preference.", error);
+    }
+  }
+
   function applyTheme(theme) {
     document.documentElement.dataset.theme = theme;
-    localStorage.setItem(themeStorageKey, theme);
+    saveTheme(theme);
     updateThemeToggle(theme);
   }
 
   function initializeTheme() {
-    const savedTheme = localStorage.getItem(themeStorageKey);
+    const savedTheme = getStoredTheme();
     const preferredTheme =
       savedTheme ||
       (window.matchMedia("(prefers-color-scheme: dark)").matches
