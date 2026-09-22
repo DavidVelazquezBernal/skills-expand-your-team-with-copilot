@@ -40,6 +40,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let searchQuery = "";
   let currentDay = "";
   let currentTimeRange = "";
+  const sharedActivityName =
+    new URLSearchParams(window.location.search).get("activity") || "";
 
   // Authentication state
   let currentUser = null;
@@ -63,6 +65,89 @@ document.addEventListener("DOMContentLoaded", () => {
     const activeTimeFilter = document.querySelector(".time-filter.active");
     if (activeTimeFilter) {
       currentTimeRange = activeTimeFilter.dataset.time;
+    }
+  }
+
+  function initializeSharedActivityFilter() {
+    if (!sharedActivityName) {
+      return;
+    }
+
+    searchQuery = sharedActivityName;
+    searchInput.value = sharedActivityName;
+  }
+
+  function buildActivityShareUrl(activityName) {
+    const shareUrl = new URL(window.location.href);
+    shareUrl.searchParams.set("activity", activityName);
+    return shareUrl.toString();
+  }
+
+  async function copyTextToClipboard(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return;
+    }
+
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.setAttribute("readonly", "");
+    textArea.style.position = "absolute";
+    textArea.style.left = "-9999px";
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand("copy");
+    document.body.removeChild(textArea);
+  }
+
+  function buildActivityShareMessage(activityName, details) {
+    return `Check out ${activityName} at Mergington High School! ${details.description}`;
+  }
+
+  async function handleActivityShare(event) {
+    const { shareType, activity } = event.currentTarget.dataset;
+    const details = allActivities[activity];
+
+    if (!details) {
+      showMessage("That activity could not be shared right now.", "error");
+      return;
+    }
+
+    const shareUrl = buildActivityShareUrl(activity);
+    const shareMessage = buildActivityShareMessage(activity, details);
+
+    try {
+      if (shareType === "share") {
+        if (navigator.share) {
+          await navigator.share({
+            title: activity,
+            text: shareMessage,
+            url: shareUrl,
+          });
+          return;
+        }
+
+        await copyTextToClipboard(shareUrl);
+        showMessage("Share link copied. You can send it to a friend.", "success");
+        return;
+      }
+
+      if (shareType === "email") {
+        const emailUrl = `mailto:?subject=${encodeURIComponent(
+          `Check out ${activity}`
+        )}&body=${encodeURIComponent(`${shareMessage}\n\n${shareUrl}`)}`;
+        window.location.href = emailUrl;
+        return;
+      }
+
+      if (shareType === "copy") {
+        await copyTextToClipboard(shareUrl);
+        showMessage("Share link copied. You can send it to a friend.", "success");
+      }
+    } catch (error) {
+      if (error.name !== "AbortError") {
+        showMessage("Sharing failed. Please try again.", "error");
+      }
     }
   }
 
@@ -498,6 +583,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Format the schedule using the new helper function
     const formattedSchedule = formatSchedule(details);
+    const shareButtonLabel = navigator.share ? "Share" : "Copy Link";
 
     // Create activity tag
     const tagHtml = `
@@ -528,6 +614,20 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="tooltip-text">Regular meetings at this time throughout the semester</span>
       </p>
       ${capacityIndicator}
+      <div class="share-actions" aria-label="Share ${name}">
+        <span class="share-actions-label">Share with friends:</span>
+        <div class="share-buttons">
+          <button class="share-button" data-share-type="share" data-activity="${name}" type="button">
+            ${shareButtonLabel}
+          </button>
+          <button class="share-button" data-share-type="email" data-activity="${name}" type="button">
+            Email
+          </button>
+          <button class="share-button" data-share-type="copy" data-activity="${name}" type="button">
+            Copy Link
+          </button>
+        </div>
+      </div>
       <div class="participants-list">
         <h5>Current Participants:</h5>
         <ul>
@@ -575,6 +675,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const deleteButtons = activityCard.querySelectorAll(".delete-participant");
     deleteButtons.forEach((button) => {
       button.addEventListener("click", handleUnregister);
+    });
+
+    const shareButtons = activityCard.querySelectorAll(".share-button");
+    shareButtons.forEach((button) => {
+      button.addEventListener("click", handleActivityShare);
     });
 
     // Add click handler for register button (only when authenticated)
@@ -864,5 +969,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // Initialize app
   checkAuthentication();
   initializeFilters();
+  initializeSharedActivityFilter();
   fetchActivities();
 });
