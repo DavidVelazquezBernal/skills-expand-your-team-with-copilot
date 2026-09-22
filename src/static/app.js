@@ -498,7 +498,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Save the activities data
       allActivities = activities;
 
-      if (sharedActivityName && !searchQuery) {
+      if (sharedActivityName && !searchInput.value) {
         initializeSharedActivityFilter();
       }
 
@@ -600,12 +600,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Format the schedule using the new helper function
     const formattedSchedule = formatSchedule(details);
-    const shareButtonLabel = navigator.share ? "Share" : "Copy Link";
+    const safeActivityName = ShareUtils.escapeHtml(name);
+    const primaryShareButtonLabel = navigator.share ? "Share" : "Copy Link";
+    const primaryShareButtonType = navigator.share ? "share" : "copy";
+    const primaryShareButtonAriaLabel = navigator.share
+      ? `Share ${safeActivityName}`
+      : `Copy link for ${safeActivityName}`;
     const shareLabelId = `share-actions-label-${encodeURIComponent(name).replace(
       /%/g,
       "-"
     )}`;
-    const safeActivityName = ShareUtils.escapeHtml(name);
 
     // Create activity tag
     const tagHtml = `
@@ -639,8 +643,8 @@ document.addEventListener("DOMContentLoaded", () => {
       <div class="share-actions" role="group" aria-labelledby="${shareLabelId}">
         <span class="share-actions-label" id="${shareLabelId}">Share with friends:</span>
         <div class="share-buttons">
-          <button class="share-button" data-share-type="share" type="button" aria-label="Share ${safeActivityName}">
-            ${shareButtonLabel}
+          <button class="share-button" data-share-type="${primaryShareButtonType}" type="button" aria-label="${primaryShareButtonAriaLabel}">
+            ${primaryShareButtonLabel}
           </button>
           <button class="share-button" data-share-type="email" type="button" aria-label="Email ${safeActivityName}">
             Email
@@ -999,6 +1003,5 @@ document.addEventListener("DOMContentLoaded", () => {
   // Initialize app
   checkAuthentication();
   initializeFilters();
-  initializeSharedActivityFilter();
   fetchActivities();
 });
