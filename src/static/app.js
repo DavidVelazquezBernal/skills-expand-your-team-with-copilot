@@ -25,8 +25,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const closeLoginModal = document.querySelector(".close-login-modal");
   const loginMessage = document.getElementById("login-message");
   const themeToggleButton = document.getElementById("theme-toggle");
-  const themeIcon = themeToggleButton.querySelector(".theme-icon");
-  const themeLabel = themeToggleButton.querySelector(".theme-label");
+  const themeIcon = themeToggleButton?.querySelector(".theme-icon");
+  const themeLabel = themeToggleButton?.querySelector(".theme-label");
 
   // Activity categories with corresponding colors
   const activityTypes = {
@@ -56,6 +56,10 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   function updateThemeToggle(theme) {
+    if (!themeToggleButton || !themeIcon || !themeLabel) {
+      return;
+    }
+
     const isDarkMode = theme === "dark";
     themeIcon.textContent = isDarkMode ? "☀️" : "🌙";
     themeLabel.textContent = isDarkMode ? "Light" : "Dark";
@@ -275,7 +279,9 @@ document.addEventListener("DOMContentLoaded", () => {
   loginButton.addEventListener("click", openLoginModal);
   logoutButton.addEventListener("click", logout);
   closeLoginModal.addEventListener("click", closeLoginModalHandler);
-  themeToggleButton.addEventListener("click", toggleTheme);
+  if (themeToggleButton) {
+    themeToggleButton.addEventListener("click", toggleTheme);
+  }
 
   // Close login modal when clicking outside
   window.addEventListener("click", (event) => {
