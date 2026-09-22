@@ -26,7 +26,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const loginMessage = document.getElementById("login-message");
   const themeToggleButton = document.getElementById("theme-toggle");
   const themeIcon = themeToggleButton?.querySelector(".theme-icon");
-  const themeLabel = themeToggleButton?.querySelector(".theme-label");
 
   // Activity categories with corresponding colors
   const activityTypes = {
@@ -56,13 +55,12 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   function updateThemeToggle(theme) {
-    if (!themeToggleButton || !themeIcon || !themeLabel) {
+    if (!themeToggleButton || !themeIcon) {
       return;
     }
 
     const isDarkMode = theme === "dark";
     themeIcon.textContent = isDarkMode ? "☀️" : "🌙";
-    themeLabel.textContent = isDarkMode ? "Light" : "Dark";
     themeToggleButton.setAttribute(
       "aria-label",
       `Switch to ${isDarkMode ? "light" : "dark"} mode`
@@ -90,26 +88,28 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function applyTheme(theme) {
+  function applyTheme(theme, shouldPersist = false) {
     document.documentElement.dataset.theme = theme;
-    saveTheme(theme);
+    if (shouldPersist) {
+      saveTheme(theme);
+    }
     updateThemeToggle(theme);
   }
 
   function initializeTheme() {
     const savedTheme = getStoredTheme();
+    const supportsColorScheme =
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches;
     const preferredTheme =
-      savedTheme ||
-      (window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light");
+      savedTheme || (supportsColorScheme ? "dark" : "light");
 
     applyTheme(preferredTheme);
   }
 
   function toggleTheme() {
     const currentTheme = document.documentElement.dataset.theme || "light";
-    applyTheme(currentTheme === "dark" ? "light" : "dark");
+    applyTheme(currentTheme === "dark" ? "light" : "dark", true);
   }
 
   // Initialize filters from active elements
