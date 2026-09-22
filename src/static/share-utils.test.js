@@ -26,6 +26,16 @@ test("builds a direct link to the shared activity", () => {
   );
 });
 
+test("preserves existing query parameters when building a direct link", () => {
+  assert.equal(
+    buildActivityShareUrl(
+      "https://example.com/static/index.html?day=Monday&time=afternoon",
+      "Art Club"
+    ),
+    "https://example.com/static/index.html?day=Monday&time=afternoon&activity=Art+Club"
+  );
+});
+
 test("omits missing descriptions from the shared message", () => {
   assert.equal(
     buildActivityShareMessage("Drama Club"),

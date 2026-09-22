@@ -154,7 +154,11 @@ document.addEventListener("DOMContentLoaded", () => {
         await copyShareLink(shareUrl);
       }
     } catch (error) {
-      if (error.name !== "AbortError") {
+      if (
+        !error ||
+        typeof error !== "object" ||
+        error.name !== "AbortError"
+      ) {
         showMessage("Sharing failed. Please try again.", "error");
       }
     }
@@ -493,6 +497,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Save the activities data
       allActivities = activities;
+
+      if (sharedActivityName && !searchQuery) {
+        initializeSharedActivityFilter();
+      }
 
       // Apply search and filter, and handle weekend filter in client
       displayFilteredActivities();
