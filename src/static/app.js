@@ -91,17 +91,22 @@ document.addEventListener("DOMContentLoaded", () => {
   function saveTheme(theme) {
     try {
       localStorage.setItem(themeStorageKey, theme);
+      return true;
     } catch (error) {
       console.warn("Unable to save theme preference.", error);
+      return false;
     }
   }
 
   function applyTheme(theme, shouldPersist = false) {
     document.documentElement.dataset.theme = theme;
-    if (shouldPersist) {
-      saveTheme(theme);
-    }
     updateThemeToggle(theme);
+
+    if (!shouldPersist) {
+      return false;
+    }
+
+    return saveTheme(theme);
   }
 
   function initializeTheme() {
@@ -155,8 +160,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function toggleTheme() {
     const currentTheme = document.documentElement.dataset.theme || "light";
-    sharedThemeState.hasExplicitPreference = true;
-    applyTheme(currentTheme === "dark" ? "light" : "dark", true);
+    sharedThemeState.hasExplicitPreference = applyTheme(
+      currentTheme === "dark" ? "light" : "dark",
+      true
+    );
   }
 
   // Initialize filters from active elements
