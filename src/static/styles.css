@@ -32,6 +32,32 @@
   --info-light: #d1ecf1;
 }
 
+:root[data-theme="dark"] {
+  --primary: #8ea2ff;
+  --primary-light: #b4c0ff;
+  --primary-dark: #6475d5;
+  --primary-text: #111827;
+  --secondary: #ffb454;
+  --secondary-light: #ffca7c;
+  --secondary-dark: #e58e1f;
+  --secondary-text: #111827;
+  --background: #111827;
+  --surface: #1f2937;
+  --text-primary: #f3f4f6;
+  --text-secondary: #d1d5db;
+  --border: #374151;
+  --border-light: #4b5563;
+  --border-focus: #6b7280;
+  --success: #34d399;
+  --success-light: #064e3b;
+  --warning: #fbbf24;
+  --warning-light: #78350f;
+  --error: #f87171;
+  --error-light: #7f1d1d;
+  --info: #67e8f9;
+  --info-light: #164e63;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -48,6 +74,26 @@ body {
   padding: 12px;
   background-color: var(--background);
   font-size: 0.9rem;
+}
+
+body,
+section,
+.sidebar-filters,
+.activity-card,
+.modal-content,
+.search-box input,
+.category-filter,
+.day-filter,
+.time-filter,
+.reset-button,
+.skeleton-card,
+.no-results,
+footer {
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 header {
@@ -289,7 +335,7 @@ section h3 {
 
 button {
   background-color: var(--primary);
-  color: white;
+  color: var(--primary-text);
   border: none;
   padding: 6px 12px;
   font-size: 0.85rem;
@@ -487,6 +533,8 @@ footer {
   flex: 1;
   min-width: 0; /* Add this to prevent input from overflowing */
   padding: 6px 10px;
+  color: var(--text-primary);
+  background-color: var(--surface);
   border: 1px solid var(--border);
   border-right: none;
   border-radius: 20px 0 0 20px;
@@ -505,7 +553,7 @@ footer {
   height: 100%; /* Make button match input height */
   min-height: 32px; /* Ensure minimum clickable area */
   background: var(--primary);
-  color: white;
+  color: var(--primary-text);
   border: none;
   border-radius: 0 20px 20px 0;
   cursor: pointer;
@@ -562,7 +610,7 @@ footer {
 .day-filter.active,
 .time-filter.active {
   background-color: var(--primary);
-  color: white;
+  color: var(--primary-text);
   border-color: var(--primary-dark);
 }
 
@@ -570,7 +618,7 @@ footer {
 .day-filter:hover,
 .time-filter:hover {
   background-color: var(--primary-light);
-  color: white;
+  color: var(--primary-text);
 }
 
 .time-filters {
@@ -617,6 +665,9 @@ footer {
   position: absolute;
   top: 10px;
   right: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 #user-status {
@@ -650,7 +701,16 @@ footer {
   background-color: rgba(255, 255, 255, 0.3);
 }
 
+.icon-button:focus-visible {
+  outline: 2px solid var(--secondary);
+  outline-offset: 2px;
+}
+
 .user-icon {
+  font-size: 1rem;
+}
+
+.theme-icon {
   font-size: 1rem;
 }
 
