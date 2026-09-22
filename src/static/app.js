@@ -73,8 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    searchQuery = sharedActivityName;
-    searchInput.value = sharedActivityName;
+    updateSearchQuery(sharedActivityName, Object.keys(allActivities).length > 0);
   }
 
   function buildActivityShareUrl(activityName) {
@@ -94,8 +93,12 @@ document.addEventListener("DOMContentLoaded", () => {
     textArea.style.left = "-9999px";
     document.body.appendChild(textArea);
     textArea.select();
-    document.execCommand("copy");
+    const copySuccessful = document.execCommand("copy");
     document.body.removeChild(textArea);
+
+    if (!copySuccessful) {
+      throw new Error("Copy command failed");
+    }
   }
 
   async function copyShareLink(shareUrl) {
@@ -138,9 +141,11 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       if (shareType === "email") {
-        const emailUrl = `mailto:?subject=${encodeURIComponent(
-          `Check out ${activity}`
-        )}&body=${encodeURIComponent(`${shareMessage}\n\n${shareUrl}`)}`;
+        const emailUrl = ShareUtils.buildActivityEmailShareUrl(
+          activity,
+          details.description,
+          shareUrl
+        );
         window.location.href = emailUrl;
         return;
       }
@@ -592,6 +597,7 @@ document.addEventListener("DOMContentLoaded", () => {
       /%/g,
       "-"
     )}`;
+    const safeActivityName = ShareUtils.escapeHtml(name);
 
     // Create activity tag
     const tagHtml = `
@@ -625,13 +631,13 @@ document.addEventListener("DOMContentLoaded", () => {
       <div class="share-actions" role="group" aria-labelledby="${shareLabelId}">
         <span class="share-actions-label" id="${shareLabelId}">Share with friends:</span>
         <div class="share-buttons">
-          <button class="share-button" data-share-type="share" type="button">
+          <button class="share-button" data-share-type="share" type="button" aria-label="Share ${safeActivityName}">
             ${shareButtonLabel}
           </button>
-          <button class="share-button" data-share-type="email" type="button">
+          <button class="share-button" data-share-type="email" type="button" aria-label="Email ${safeActivityName}">
             Email
           </button>
-          <button class="share-button" data-share-type="copy" type="button">
+          <button class="share-button" data-share-type="copy" type="button" aria-label="Copy link for ${safeActivityName}">
             Copy Link
           </button>
         </div>
@@ -706,15 +712,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Event listeners for search and filter
   searchInput.addEventListener("input", (event) => {
-    searchQuery = event.target.value;
-    displayFilteredActivities();
+    updateSearchQuery(event.target.value);
   });
 
   searchButton.addEventListener("click", (event) => {
     event.preventDefault();
-    searchQuery = searchInput.value;
-    displayFilteredActivities();
+    updateSearchQuery(searchInput.value);
   });
+
+  function updateSearchQuery(value, shouldRender = true) {
+    searchQuery = value;
+    searchInput.value = value;
+
+    if (shouldRender) {
+      displayFilteredActivities();
+    }
+  }
 
   // Add event listeners to category filter buttons
   categoryFilters.forEach((button) => {

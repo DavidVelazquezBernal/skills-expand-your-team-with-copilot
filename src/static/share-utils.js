@@ -17,6 +17,13 @@
     return `Check out ${activityName} at Mergington High School! ${description}`;
   }
 
+  function buildActivityEmailShareUrl(activityName, description, shareUrl) {
+    const shareMessage = buildActivityShareMessage(activityName, description);
+    return `mailto:?subject=${encodeURIComponent(
+      `Check out ${activityName}`
+    )}&body=${encodeURIComponent(`${shareMessage}\n\n${shareUrl}`)}`;
+  }
+
   function escapeHtml(value) {
     return String(value)
       .replace(/&/g, "&amp;")
@@ -30,6 +37,7 @@
     getSharedActivityNameFromSearch,
     buildActivityShareUrl,
     buildActivityShareMessage,
+    buildActivityEmailShareUrl,
     escapeHtml,
   };
 
