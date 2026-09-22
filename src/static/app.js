@@ -588,7 +588,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // Format the schedule using the new helper function
     const formattedSchedule = formatSchedule(details);
     const shareButtonLabel = navigator.share ? "Share" : "Copy Link";
-    const safeActivityName = ShareUtils.escapeHtml(name);
+    const shareLabelId = `share-actions-label-${encodeURIComponent(name).replace(
+      /%/g,
+      "-"
+    )}`;
 
     // Create activity tag
     const tagHtml = `
@@ -619,16 +622,16 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="tooltip-text">Regular meetings at this time throughout the semester</span>
       </p>
       ${capacityIndicator}
-      <div class="share-actions" aria-label="Share ${safeActivityName}">
-        <span class="share-actions-label">Share with friends:</span>
+      <div class="share-actions" role="group" aria-labelledby="${shareLabelId}">
+        <span class="share-actions-label" id="${shareLabelId}">Share with friends:</span>
         <div class="share-buttons">
-          <button class="share-button" data-share-type="share" data-activity="${safeActivityName}" type="button">
+          <button class="share-button" data-share-type="share" type="button">
             ${shareButtonLabel}
           </button>
-          <button class="share-button" data-share-type="email" data-activity="${safeActivityName}" type="button">
+          <button class="share-button" data-share-type="email" type="button">
             Email
           </button>
-          <button class="share-button" data-share-type="copy" data-activity="${safeActivityName}" type="button">
+          <button class="share-button" data-share-type="copy" type="button">
             Copy Link
           </button>
         </div>
@@ -684,6 +687,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const shareButtons = activityCard.querySelectorAll(".share-button");
     shareButtons.forEach((button) => {
+      button.dataset.activity = name;
       button.addEventListener("click", handleActivityShare);
     });
 
