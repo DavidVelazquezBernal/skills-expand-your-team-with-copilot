@@ -48,6 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentUser = null;
   let hasExplicitThemePreference = false;
   const themeStorageKey = "preferredTheme";
+  const systemThemeListenerFlag = "__mergingtonThemeListenerRegistered";
 
   // Time range mappings for the dropdown
   const timeRanges = {
@@ -118,7 +119,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function watchSystemThemePreference() {
-    if (typeof window.matchMedia !== "function") {
+    if (
+      typeof window.matchMedia !== "function" ||
+      window[systemThemeListenerFlag]
+    ) {
       return;
     }
 
@@ -128,6 +132,8 @@ document.addEventListener("DOMContentLoaded", () => {
         applyTheme(event.matches ? "dark" : "light");
       }
     };
+
+    window[systemThemeListenerFlag] = true;
 
     if (typeof colorSchemeQuery.addEventListener === "function") {
       colorSchemeQuery.addEventListener("change", updateThemeFromSystem);
